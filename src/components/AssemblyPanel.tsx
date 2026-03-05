@@ -33,14 +33,13 @@ function SortableItem({ assemblyPage, index, onRemove }: SortableItemProps) {
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
       <PageThumbnail
         page={assemblyPage.source}
         badge={index + 1}
         inAssembly
         onRemove={onRemove}
         dragging={isDragging}
-        dragHandleProps={listeners as React.HTMLAttributes<HTMLDivElement>}
       />
     </div>
   )
@@ -64,7 +63,7 @@ export function AssemblyPanel({
   downloading,
 }: AssemblyPanelProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),

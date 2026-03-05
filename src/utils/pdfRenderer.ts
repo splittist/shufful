@@ -15,7 +15,7 @@ export async function renderPageThumbnail(
   pageNumber: number,
   thumbnailWidth = 200,
 ): Promise<string> {
-  const pdf = await pdfjs.getDocument({ data: data.slice(0) }).promise
+  const pdf = await pdfjs.getDocument({ data: data.slice(0), password: '' }).promise
   const page = await pdf.getPage(pageNumber)
   const viewport = page.getViewport({ scale: 1 })
   const scale = thumbnailWidth / viewport.width

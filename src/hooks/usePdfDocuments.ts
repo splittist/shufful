@@ -28,7 +28,7 @@ export function usePdfDocuments() {
 
       // Generate thumbnails asynchronously.
       try {
-        const pdf = await getDocument({ data: data.slice(0) }).promise
+        const pdf = await getDocument({ data: data.slice(0), password: '' }).promise
         const totalPages = pdf.numPages
         const pages: SourcePage[] = []
 

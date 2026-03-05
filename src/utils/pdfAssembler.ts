@@ -32,7 +32,7 @@ export async function assemblePagesFromRegistry(pages: AssemblyPage[]): Promise<
     let srcDoc = docCache.get(source.documentId)
     if (!srcDoc) {
       const bytes = await fetchDocBytes(source.documentId)
-      srcDoc = await PDFDocument.load(bytes)
+      srcDoc = await PDFDocument.load(bytes, { ignoreEncryption: true })
       docCache.set(source.documentId, srcDoc)
     }
     const [copied] = await output.copyPages(srcDoc, [source.pageNumber - 1])

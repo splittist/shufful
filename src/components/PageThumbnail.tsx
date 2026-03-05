@@ -10,7 +10,6 @@ interface PageThumbnailProps {
   inAssembly?: boolean
   onRemove?: () => void
   dragging?: boolean
-  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export function PageThumbnail({
@@ -21,7 +20,6 @@ export function PageThumbnail({
   inAssembly = false,
   onRemove,
   dragging = false,
-  dragHandleProps,
 }: PageThumbnailProps) {
   return (
     <div
@@ -69,20 +67,6 @@ export function PageThumbnail({
         >
           ×
         </button>
-      )}
-
-      {/* Drag handle */}
-      {dragHandleProps && (
-        <div
-          {...dragHandleProps}
-          className="absolute top-1 right-1 p-0.5 rounded bg-slate-200/80 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Drag to reorder"
-          onClick={e => e.stopPropagation()}
-        >
-          <svg className="h-3 w-3 text-slate-600" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-          </svg>
-        </div>
       )}
     </div>
   )
