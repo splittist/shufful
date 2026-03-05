@@ -13,13 +13,13 @@ export default function App() {
   const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleDownload() {
+  async function handleDownload(filename: string) {
     if (assemblyPages.length === 0) return
     setDownloading(true)
     setError(null)
     try {
       const bytes = await assemblePagesFromRegistry(assemblyPages)
-      downloadPdf(bytes, 'assembled.pdf')
+      downloadPdf(bytes, `${filename}.pdf`)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -33,7 +33,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
+    <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -73,14 +73,31 @@ export default function App() {
       )}
 
       {/* Main layout */}
-      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <main className="flex-1 min-h-0 max-w-screen-xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left panel: source documents */}
-        <section className="flex flex-col gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <section className="flex flex-col gap-4 min-h-0">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 shrink-0">
             Source Documents
           </h2>
           <FileUploader onFiles={addDocuments} />
-          <div className="flex-1 overflow-y-auto">
+          {/* Document quick-nav */}
+          {documents.length > 1 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 shrink-0">
+              {documents.map(doc => (
+                <button
+                  key={doc.id}
+                  className="shrink-0 text-xs bg-white border border-slate-200 rounded-full px-2.5 py-0.5 text-slate-600 hover:border-blue-400 hover:text-blue-600 truncate max-w-[12rem] transition-colors"
+                  title={doc.name}
+                  onClick={() =>
+                    document.getElementById(`doc-${doc.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
+                >
+                  {doc.name}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <DocumentPanel
               documents={documents}
               onAddPage={addPage}
@@ -91,7 +108,7 @@ export default function App() {
         </section>
 
         {/* Right panel: assembly */}
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 min-h-0">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 sr-only">
             Assembly
           </h2>

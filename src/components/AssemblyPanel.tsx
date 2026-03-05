@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -7,6 +8,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
+import { restrictToParentElement } from '@dnd-kit/modifiers'
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -50,7 +52,7 @@ interface AssemblyPanelProps {
   onReorder: (oldIndex: number, newIndex: number) => void
   onRemovePage: (id: string) => void
   onClear: () => void
-  onDownload: () => void
+  onDownload: (filename: string) => void
   downloading: boolean
 }
 
@@ -62,6 +64,8 @@ export function AssemblyPanel({
   onDownload,
   downloading,
 }: AssemblyPanelProps) {
+  const [filename, setFilename] = useState('assembled')
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
@@ -78,10 +82,10 @@ export function AssemblyPanel({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-sm font-semibold text-slate-700">
+        <span className="text-sm font-semibold text-slate-700 shrink-0">
           Assembly
           {pages.length > 0 && (
             <span className="ml-1.5 text-xs font-normal text-slate-400">
@@ -89,23 +93,36 @@ export function AssemblyPanel({
             </span>
           )}
         </span>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {pages.length > 0 && (
             <button
-              className="text-xs text-slate-400 hover:text-red-500"
+              className="text-xs text-slate-400 hover:text-red-500 shrink-0"
               onClick={onClear}
               title="Clear all pages"
             >
               Clear
             </button>
           )}
-          <button
-            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            onClick={onDownload}
-            disabled={pages.length === 0 || downloading}
-          >
-            {downloading ? 'Assembling…' : 'Download PDF'}
-          </button>
+          <div className="flex items-center rounded-lg border border-slate-200 overflow-hidden shadow">
+            <input
+              type="text"
+              value={filename}
+              onChange={e => setFilename(e.target.value)}
+              className="px-2 py-1.5 text-sm text-slate-700 bg-white min-w-0 w-28 focus:outline-none"
+              aria-label="Output filename"
+              spellCheck={false}
+            />
+            <span className="px-1.5 py-1.5 text-sm text-slate-400 bg-slate-50 border-l border-slate-200 shrink-0">
+              .pdf
+            </span>
+            <button
+              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+              onClick={() => onDownload(filename || 'assembled')}
+              disabled={pages.length === 0 || downloading}
+            >
+              {downloading ? 'Assembling…' : 'Download'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -138,9 +155,10 @@ export function AssemblyPanel({
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
+          modifiers={[restrictToParentElement]}
         >
           <SortableContext items={pages.map(p => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-2 overflow-y-auto">
+            <div className="grid grid-cols-3 gap-2 overflow-y-auto flex-1 min-h-0 content-start">
               {pages.map((ap, i) => (
                 <SortableItem
                   key={ap.id}

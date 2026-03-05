@@ -57,7 +57,7 @@ export function DocumentPanel({
       {documents.map(doc => {
         const isSelecting = selectingDoc === doc.id
         return (
-          <div key={doc.id} className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div key={doc.id} id={`doc-${doc.id}`} className="rounded-xl border border-slate-200 bg-white shadow-sm">
             {/* Document header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-100">
               <svg
