@@ -2,14 +2,20 @@ import { useState } from 'react'
 import { FileUploader } from './components/FileUploader'
 import { DocumentPanel } from './components/DocumentPanel'
 import { AssemblyPanel } from './components/AssemblyPanel'
+import { RecipePanel } from './components/RecipePanel'
 import { usePdfDocuments } from './hooks/usePdfDocuments'
 import { useAssembly } from './hooks/useAssembly'
+import { useRecipe } from './hooks/useRecipe'
 import { assemblePagesFromRegistry, downloadPdf } from './utils/pdfAssembler'
+
+type Mode = 'manual' | 'recipe'
 
 export default function App() {
   const { documents, addDocuments, removeDocument } = usePdfDocuments()
   const { assemblyPages, addPage, addAllPages, removePage, reorderPages, clearAssembly, removeDocumentPages } =
     useAssembly()
+  const recipe = useRecipe()
+  const [mode, setMode] = useState<Mode>('manual')
   const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,6 +61,20 @@ export default function App() {
           <span className="text-xs text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">
             PDF Assembly
           </span>
+          <div className="ml-auto flex rounded-lg border border-slate-200 overflow-hidden text-xs font-medium">
+            <button
+              className={`px-3 py-1.5 transition-colors ${mode === 'manual' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              onClick={() => setMode('manual')}
+            >
+              Manual
+            </button>
+            <button
+              className={`px-3 py-1.5 transition-colors border-l border-slate-200 ${mode === 'recipe' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              onClick={() => setMode('recipe')}
+            >
+              Recipe
+            </button>
+          </div>
         </div>
       </header>
 
@@ -107,19 +127,23 @@ export default function App() {
           </div>
         </section>
 
-        {/* Right panel: assembly */}
+        {/* Right panel: assembly or recipe */}
         <section className="flex flex-col gap-4 min-h-0">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 sr-only">
-            Assembly
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 shrink-0">
+            {mode === 'manual' ? 'Assembly' : 'Recipe'}
           </h2>
-          <AssemblyPanel
-            pages={assemblyPages}
-            onReorder={reorderPages}
-            onRemovePage={removePage}
-            onClear={clearAssembly}
-            onDownload={handleDownload}
-            downloading={downloading}
-          />
+          {mode === 'manual' ? (
+            <AssemblyPanel
+              pages={assemblyPages}
+              onReorder={reorderPages}
+              onRemovePage={removePage}
+              onClear={clearAssembly}
+              onDownload={handleDownload}
+              downloading={downloading}
+            />
+          ) : (
+            <RecipePanel documents={documents} recipe={recipe} />
+          )}
         </section>
       </main>
 
