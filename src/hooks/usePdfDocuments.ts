@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { getDocument } from 'pdfjs-dist'
 import { v4 as uuidv4 } from '../utils/uuid'
 import type { PdfDocument, SourcePage } from '../types'
-import { renderPageThumbnail } from '../utils/pdfRenderer'
+import { renderPageFromDocument } from '../utils/pdfRenderer'
 import { registerDocument, unregisterDocument } from '../utils/pdfAssembler'
 
 export function usePdfDocuments() {
@@ -28,12 +28,12 @@ export function usePdfDocuments() {
 
       // Generate thumbnails asynchronously.
       try {
-        const pdf = await getDocument({ data: data.slice(0), password: '' }).promise
+        const pdf = await getDocument({ data: data.slice(0) }).promise
         const totalPages = pdf.numPages
         const pages: SourcePage[] = []
 
         for (let p = 1; p <= totalPages; p++) {
-          const thumbnail = await renderPageThumbnail(data, p)
+          const thumbnail = await renderPageFromDocument(pdf, p)
           pages.push({
             id: `${id}-p${p}`,
             documentId: id,

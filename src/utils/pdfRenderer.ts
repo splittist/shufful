@@ -8,14 +8,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString()
 
 /**
- * Render a single PDF page to a canvas and return its data URL.
+ * Render a single page from an already-loaded PDF document to a canvas and return its data URL.
  */
-export async function renderPageThumbnail(
-  data: ArrayBuffer,
+export async function renderPageFromDocument(
+  pdf: pdfjs.PDFDocumentProxy,
   pageNumber: number,
   thumbnailWidth = 200,
 ): Promise<string> {
-  const pdf = await pdfjs.getDocument({ data: data.slice(0), password: '' }).promise
   const page = await pdf.getPage(pageNumber)
   const viewport = page.getViewport({ scale: 1 })
   const scale = thumbnailWidth / viewport.width
