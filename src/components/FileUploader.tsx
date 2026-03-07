@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 
 interface FileUploaderProps {
   onFiles: (files: File[]) => void
 }
 
 export function FileUploader({ onFiles }: FileUploaderProps) {
-  const [dragging, setDragging] = React.useState(false)
+  const [dragging, setDragging] = useState(false)
 
   const handleFiles = useCallback(
     (files: FileList | null) => {

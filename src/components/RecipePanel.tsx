@@ -34,7 +34,6 @@ export function RecipePanel({ documents, recipe }: RecipePanelProps) {
     documents={documents}
     rawJson={rawJson}
     fatalErrors={fatalErrors}
-    queueItems={queueItems}
     onChangeJson={setRawJson}
     onApply={() => applyRecipe(documents)}
     onCopySchema={handleCopySchema}

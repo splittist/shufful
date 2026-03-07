@@ -19,23 +19,24 @@ async function fetchDocBytes(id: string): Promise<ArrayBuffer> {
 }
 
 /**
- * Assemble pages using the in-memory document registry.
+ * Assemble pages from simple documentId + pageNumber pairs using the in-memory registry.
  */
-export async function assemblePagesFromRegistry(pages: AssemblyPage[]): Promise<Uint8Array> {
-  if (pages.length === 0) throw new Error('No pages to assemble')
+export async function assemblePagesFromRefs(
+  refs: { documentId: string; pageNumber: number }[],
+): Promise<Uint8Array> {
+  if (refs.length === 0) throw new Error('No pages to assemble')
 
   const output = await PDFDocument.create()
   const docCache = new Map<string, PDFDocument>()
 
-  for (const ap of pages) {
-    const { source } = ap
-    let srcDoc = docCache.get(source.documentId)
+  for (const { documentId, pageNumber } of refs) {
+    let srcDoc = docCache.get(documentId)
     if (!srcDoc) {
-      const bytes = await fetchDocBytes(source.documentId)
+      const bytes = await fetchDocBytes(documentId)
       srcDoc = await PDFDocument.load(bytes, { ignoreEncryption: true })
-      docCache.set(source.documentId, srcDoc)
+      docCache.set(documentId, srcDoc)
     }
-    const [copied] = await output.copyPages(srcDoc, [source.pageNumber - 1])
+    const [copied] = await output.copyPages(srcDoc, [pageNumber - 1])
     output.addPage(copied)
   }
 
@@ -43,14 +44,30 @@ export async function assemblePagesFromRegistry(pages: AssemblyPage[]): Promise<
 }
 
 /**
- * Trigger a browser download of the given bytes as a PDF file.
+ * Assemble pages using the in-memory document registry.
  */
-export function downloadPdf(bytes: Uint8Array, filename: string): void {
-  const blob = new Blob([bytes], { type: 'application/pdf' })
+export async function assemblePagesFromRegistry(pages: AssemblyPage[]): Promise<Uint8Array> {
+  return assemblePagesFromRefs(pages.map(ap => ({
+    documentId: ap.source.documentId,
+    pageNumber: ap.source.pageNumber,
+  })))
+}
+
+/**
+ * Trigger a browser download of the given Blob.
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename
   a.click()
   URL.revokeObjectURL(url)
+}
+
+/**
+ * Trigger a browser download of the given bytes as a PDF file.
+ */
+export function downloadPdf(bytes: Uint8Array, filename: string): void {
+  downloadBlob(new Blob([bytes], { type: 'application/pdf' }), filename)
 }

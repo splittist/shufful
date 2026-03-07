@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { registerDocument, unregisterDocument, assemblePagesFromRegistry, downloadPdf } from '../utils/pdfAssembler'
+import { registerDocument, unregisterDocument, assemblePagesFromRegistry, assemblePagesFromRefs, downloadPdf, downloadBlob } from '../utils/pdfAssembler'
 import type { AssemblyPage } from '../types'
 
 // Minimal mock for pdf-lib
@@ -71,6 +71,22 @@ describe('pdfAssembler', () => {
     expect(result).toBeInstanceOf(Uint8Array)
     unregisterDocument('doc-2')
   })
+
+  it('assemblePagesFromRefs throws when no refs provided', async () => {
+    await expect(assemblePagesFromRefs([])).rejects.toThrow('No pages to assemble')
+  })
+
+  it('assemblePagesFromRefs throws when document is not registered', async () => {
+    await expect(assemblePagesFromRefs([{ documentId: 'doc-missing', pageNumber: 1 }])).rejects.toThrow('doc-missing not found')
+  })
+
+  it('assemblePagesFromRefs succeeds with a registered document', async () => {
+    const buf = new ArrayBuffer(8)
+    registerDocument('doc-3', buf)
+    const result = await assemblePagesFromRefs([{ documentId: 'doc-3', pageNumber: 1 }])
+    expect(result).toBeInstanceOf(Uint8Array)
+    unregisterDocument('doc-3')
+  })
 })
 
 describe('downloadPdf', () => {
@@ -92,5 +108,27 @@ describe('downloadPdf', () => {
     expect(createElement).toHaveBeenCalledWith('a')
     expect(click).toHaveBeenCalled()
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:fake-url')
+  })
+})
+
+describe('downloadBlob', () => {
+  it('creates an anchor element and clicks it', () => {
+    const createObjectURL = vi.fn().mockReturnValue('blob:fake-url-2')
+    const revokeObjectURL = vi.fn()
+    const click = vi.fn()
+    const createElement = vi.spyOn(document, 'createElement').mockReturnValueOnce({
+      href: '',
+      download: '',
+      click,
+    } as unknown as HTMLAnchorElement)
+
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, writable: true })
+    Object.defineProperty(URL, 'revokeObjectURL', { value: revokeObjectURL, writable: true })
+
+    downloadBlob(new Blob(['data']), 'archive.zip')
+
+    expect(createElement).toHaveBeenCalledWith('a')
+    expect(click).toHaveBeenCalled()
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:fake-url-2')
   })
 })
