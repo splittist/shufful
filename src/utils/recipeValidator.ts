@@ -1,7 +1,5 @@
 import type { PdfDocument } from '../types'
 import type {
-  Recipe,
-  RecipeOutput,
   RecipePageSelection,
   ResolvedOutput,
   ResolvedPageSelection,
